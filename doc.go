@@ -74,7 +74,7 @@ served. Just call Clear() passing the request:
 ...or use ClearHandler(), which conveniently wraps an http.Handler to clear
 variables at the end of a request lifetime.
 
-The Routers from the package gorilla/mux and gorilla/pat calls Clear(),
+The Routers from the packages gorilla/mux and gorilla/pat call Clear()
 so if you are using either of them you don't need to clear the context manually.
 */
 package context
