@@ -10,59 +10,39 @@ import (
 	"time"
 )
 
-var globalContext *Context = NewContext()
-
-type Context struct {
-	mutex sync.RWMutex
-	data  map[*http.Request]map[interface{}]interface{}
-	datat map[*http.Request]int64
-}
-
-func NewContext() *Context {
-	data := make(map[*http.Request]map[interface{}]interface{})
-	datat := make(map[*http.Request]int64)
-	return &Context{data: data, datat: datat}
-}
+var (
+	mutex sync.Mutex
+	data  = make(map[*http.Request]map[interface{}]interface{})
+	datat = make(map[*http.Request]int64)
+)
 
 // Set stores a value for a given key in a given request.
 func Set(r *http.Request, key, val interface{}) {
-	globalContext.Set(r, key, val)
-}
-
-func (c *Context) Set(r *http.Request, key, val interface{}) {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
-	if c.data[r] == nil {
-		c.data[r] = make(map[interface{}]interface{})
-		c.datat[r] = time.Now().Unix()
+	mutex.Lock()
+	defer mutex.Unlock()
+	if data[r] == nil {
+		data[r] = make(map[interface{}]interface{})
+		datat[r] = time.Now().Unix()
 	}
-	c.data[r][key] = val
+	data[r][key] = val
 }
 
 // Get returns a value stored for a given key in a given request.
 func Get(r *http.Request, key interface{}) interface{} {
-	return globalContext.Get(r, key)
-}
-
-func (c *Context) Get(r *http.Request, key interface{}) interface{} {
-	c.mutex.RLock()
-	defer c.mutex.RUnlock()
-	if c.data[r] != nil {
-		return c.data[r][key]
+	mutex.Lock()
+	defer mutex.Unlock()
+	if data[r] != nil {
+		return data[r][key]
 	}
 	return nil
 }
 
 // Delete removes a value stored for a given key in a given request.
 func Delete(r *http.Request, key interface{}) {
-	globalContext.Delete(r, key)
-}
-
-func (c *Context) Delete(r *http.Request, key interface{}) {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
-	if c.data[r] != nil {
-		delete(c.data[r], key)
+	mutex.Lock()
+	defer mutex.Unlock()
+	if data[r] != nil {
+		delete(data[r], key)
 	}
 }
 
@@ -71,19 +51,15 @@ func (c *Context) Delete(r *http.Request, key interface{}) {
 // This is usually called by a handler wrapper to clean up request
 // variables at the end of a request lifetime. See ClearHandler().
 func Clear(r *http.Request) {
-	globalContext.Clear(r)
-}
-
-func (c *Context) Clear(r *http.Request) {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
-	c.clear(r)
+	mutex.Lock()
+	defer mutex.Unlock()
+	clear(r)
 }
 
 // clear is Clear without the lock.
-func (c *Context) clear(r *http.Request) {
-	delete(c.data, r)
-	delete(c.datat, r)
+func clear(r *http.Request) {
+	delete(data, r)
+	delete(datat, r)
 }
 
 // Purge removes request data stored for longer than maxAge, in seconds.
@@ -96,22 +72,18 @@ func (c *Context) clear(r *http.Request) {
 // amount of memory. In case this is detected, Purge() must be called
 // periodically until the problem is fixed.
 func Purge(maxAge int) int {
-	return globalContext.Purge(maxAge)
-}
-
-func (c *Context) Purge(maxAge int) int {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
+	mutex.Lock()
+	defer mutex.Unlock()
 	count := 0
 	if maxAge <= 0 {
-		count = len(c.data)
-		c.data = make(map[*http.Request]map[interface{}]interface{})
-		c.datat = make(map[*http.Request]int64)
+		count = len(data)
+		data = make(map[*http.Request]map[interface{}]interface{})
+		datat = make(map[*http.Request]int64)
 	} else {
 		min := time.Now().Unix() - int64(maxAge)
-		for r, _ := range c.data {
-			if c.datat[r] < min {
-				c.clear(r)
+		for r, _ := range data {
+			if datat[r] < min {
+				clear(r)
 				count++
 			}
 		}
