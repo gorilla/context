@@ -11,8 +11,8 @@ import (
 )
 
 type Ctxt struct {
-    req *http.Request
-    key interface{}
+	req *http.Request
+	key interface{}
 }
 
 var (
@@ -25,24 +25,24 @@ var (
 func Set(r *http.Request, key, val interface{}) {
 	mutex.Lock()
 	defer mutex.Unlock()
-    data[Ctxt{r, key}] = val
-    if _, ok := datat[r]; !ok {
-        datat[r] = time.Now().Unix()
-    }
+	data[Ctxt{r, key}] = val
+	if _, ok := datat[r]; !ok {
+		datat[r] = time.Now().Unix()
+	}
 }
 
 // Get returns a value stored for a given key in a given request.
 func Get(r *http.Request, key interface{}) interface{} {
 	mutex.Lock()
 	defer mutex.Unlock()
-    return data[Ctxt{r, key}]
+	return data[Ctxt{r, key}]
 }
 
 // Delete removes a value stored for a given key in a given request.
 func Delete(r *http.Request, key interface{}) {
 	mutex.Lock()
 	defer mutex.Unlock()
-    delete(data, Ctxt{r, key})
+	delete(data, Ctxt{r, key})
 }
 
 // Clear removes all values stored for a given request.
@@ -57,11 +57,11 @@ func Clear(r *http.Request) {
 
 // clear is Clear without the lock.
 func clear(r *http.Request) {
-    for ctxt, _ := range data {
-        if ctxt.req == r {
-            delete(data, ctxt)
-        }
-    }
+	for ctxt, _ := range data {
+		if ctxt.req == r {
+			delete(data, ctxt)
+		}
+	}
 	delete(datat, r)
 }
 
@@ -80,7 +80,7 @@ func Purge(maxAge int) int {
 	count := 0
 	if maxAge <= 0 {
 		count = len(data)
-        data = make(map[Ctxt]interface{})
+		data = make(map[Ctxt]interface{})
 		datat = make(map[*http.Request]int64)
 	} else {
 		min := time.Now().Unix() - int64(maxAge)
