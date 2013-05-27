@@ -37,6 +37,18 @@ func Get(r *http.Request, key interface{}) interface{} {
 	return nil
 }
 
+// Has returns true if value present for a given key in a given request.
+func Has(r *http.Request, key interface{}) bool {
+	mutex.Lock()
+	defer mutex.Unlock()
+	if _, ok := data[r]; ok {
+		_, ok = data[r][key]
+		return ok
+	} else {
+		return false
+	}
+}
+
 // Delete removes a value stored for a given key in a given request.
 func Delete(r *http.Request, key interface{}) {
 	mutex.Lock()
