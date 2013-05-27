@@ -37,14 +37,22 @@ func TestContext(t *testing.T) {
 	assertEqual(Get(r, key2), "2")
 	assertEqual(len(data[r]), 2)
 
+	// Has()
+	assertEqual(Has(r, key1), true)
+	assertEqual(Has(r, "not exists"), false)
+
+	Set(r, "nil value", nil)
+	assertEqual(Get(r, "nil value"), nil)
+	assertEqual(Has(r, "nil value"), true)
+
 	// Delete()
 	Delete(r, key1)
 	assertEqual(Get(r, key1), nil)
-	assertEqual(len(data[r]), 1)
+	assertEqual(len(data[r]), 2)
 
 	Delete(r, key2)
 	assertEqual(Get(r, key2), nil)
-	assertEqual(len(data[r]), 0)
+	assertEqual(len(data[r]), 1)
 
 	// Clear()
 	Clear(r)
