@@ -39,8 +39,8 @@ The application can later access the variable using the same key you provided:
 		// val is "bar".
 		val := context.Get(r, foo.MyKey)
 
-		// returns true
-		ok := context.Has(r, foo.MyKey)
+		// returns ("bar", true)
+		val, ok := context.GetOk(r, foo.MyKey)
 		// ...
 	}
 
