@@ -48,6 +48,16 @@ func GetOk(r *http.Request, key interface{}) (interface{}, bool) {
 	return nil, false
 }
 
+// GetAll returns all stored values for the request as a map.
+func GetAll(r *http.Request) (map[interface{}]interface{}, bool) {
+	mutex.Lock()
+	defer mutex.Unlock()
+	if all, ok := data[r]; ok {
+		return all, ok
+	}
+	return nil, false
+}
+
 // Delete removes a value stored for a given key in a given request.
 func Delete(r *http.Request, key interface{}) {
 	mutex.Lock()
