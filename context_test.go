@@ -53,13 +53,12 @@ func TestContext(t *testing.T) {
 	assertEqual(ok, true)
 
 	// GetAll()
-	values, ok := GetAll(r)
-	assertEqual(ok, true)
+	values := GetAll(r)
 	assertEqual(len(values), 3)
 
 	// GetAll() for empty request
-	values, ok = GetAll(emptyR)
-	assertEqual(ok, false)
+	values = GetAll(emptyR)
+	assertEqual(len(values), 0)
 
 	// Delete()
 	Delete(r, key1)
