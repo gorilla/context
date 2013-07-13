@@ -51,6 +51,11 @@ func TestContext(t *testing.T) {
 	assertEqual(value, nil)
 	assertEqual(ok, true)
 
+	// GetAll()
+	values, ok := GetAll(r)
+	assertEqual(ok, true)
+	assertEqual(len(values), 3)
+
 	// Delete()
 	Delete(r, key1)
 	assertEqual(Get(r, key1), nil)
