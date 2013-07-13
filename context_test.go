@@ -24,6 +24,7 @@ func TestContext(t *testing.T) {
 	}
 
 	r, _ := http.NewRequest("GET", "http://localhost:8080/", nil)
+	emptyR, _ := http.NewRequest("GET", "http://localhost:8080/", nil)
 
 	// Get()
 	assertEqual(Get(r, key1), nil)
@@ -55,6 +56,10 @@ func TestContext(t *testing.T) {
 	values, ok := GetAll(r)
 	assertEqual(ok, true)
 	assertEqual(len(values), 3)
+
+	// GetAll() for empty request
+	values, ok = GetAll(emptyR)
+	assertEqual(ok, false)
 
 	// Delete()
 	Delete(r, key1)
