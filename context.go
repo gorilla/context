@@ -57,6 +57,16 @@ func GetAll(r *http.Request) map[interface{}]interface{} {
 	return context
 }
 
+// GetAll returns all stored values for the request as a map. It returns not ok
+// if the request was never registered.
+func GetAllOk(r *http.Request) (map[interface{}]interface{}, bool) {
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	context, ok := data[r]
+	return context, ok
+}
+
 // Delete removes a value stored for a given key in a given request.
 func Delete(r *http.Request, key interface{}) {
 	mutex.Lock()
