@@ -48,13 +48,15 @@ func GetOk(r *http.Request, key interface{}) (interface{}, bool) {
 	return nil, false
 }
 
-// GetAll returns all stored values for the request as a map.
-func GetAll(r *http.Request) map[interface{}]interface{} {
+// GetAll returns all stored values for the request as a map. Nil is returned for invalid requests.
+func GetAll(r *http.Request) *map[interface{}]interface{} {
 	mutex.Lock()
 	defer mutex.Unlock()
 
-	context, _ := data[r]
-	return context
+	if context, ok := data[r]; ok {
+		return &context
+	}
+	return nil
 }
 
 // GetAll returns all stored values for the request as a map. It returns not ok
