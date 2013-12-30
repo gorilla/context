@@ -7,28 +7,38 @@ package context
 import (
 	"net/http"
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
 var (
-	mutex sync.Mutex
-	data  = make(map[*http.Request]map[interface{}]interface{})
-	datat = make(map[*http.Request]int64)
+	mutex   sync.Mutex
+	nextKey = Key(0)
+	data    = make(map[*http.Request]map[Key]interface{})
+	datat   = make(map[*http.Request]int64)
 )
 
+// Key to get or set value.
+type Key uintptr
+
+// Registers a new Key.
+func RegisterKey() Key {
+	return Key(atomic.AddUintptr((*uintptr)(&nextKey), 1))
+}
+
 // Set stores a value for a given key in a given request.
-func Set(r *http.Request, key, val interface{}) {
+func Set(r *http.Request, key Key, val interface{}) {
 	mutex.Lock()
 	defer mutex.Unlock()
 	if data[r] == nil {
-		data[r] = make(map[interface{}]interface{})
+		data[r] = make(map[Key]interface{})
 		datat[r] = time.Now().Unix()
 	}
 	data[r][key] = val
 }
 
 // Get returns a value stored for a given key in a given request.
-func Get(r *http.Request, key interface{}) interface{} {
+func Get(r *http.Request, key Key) interface{} {
 	mutex.Lock()
 	defer mutex.Unlock()
 	if data[r] != nil {
@@ -38,7 +48,7 @@ func Get(r *http.Request, key interface{}) interface{} {
 }
 
 // GetOk returns stored value and presence state like multi-value return of map access.
-func GetOk(r *http.Request, key interface{}) (interface{}, bool) {
+func GetOk(r *http.Request, key Key) (interface{}, bool) {
 	mutex.Lock()
 	defer mutex.Unlock()
 	if _, ok := data[r]; ok {
@@ -49,7 +59,7 @@ func GetOk(r *http.Request, key interface{}) (interface{}, bool) {
 }
 
 // Delete removes a value stored for a given key in a given request.
-func Delete(r *http.Request, key interface{}) {
+func Delete(r *http.Request, key Key) {
 	mutex.Lock()
 	defer mutex.Unlock()
 	if data[r] != nil {
@@ -88,7 +98,7 @@ func Purge(maxAge int) int {
 	count := 0
 	if maxAge <= 0 {
 		count = len(data)
-		data = make(map[*http.Request]map[interface{}]interface{})
+		data = make(map[*http.Request]map[Key]interface{})
 		datat = make(map[*http.Request]int64)
 	} else {
 		min := time.Now().Unix() - int64(maxAge)
