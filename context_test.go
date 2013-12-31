@@ -9,11 +9,9 @@ import (
 	"testing"
 )
 
-type keyType int
-
-const (
-	key1 keyType = iota
-	key2
+var (
+	key1 = RegisterKey()
+	key2 = RegisterKey()
 )
 
 func TestContext(t *testing.T) {
@@ -42,12 +40,13 @@ func TestContext(t *testing.T) {
 	assertEqual(value, "1")
 	assertEqual(ok, true)
 
-	value, ok = GetOk(r, "not exists")
+	value, ok = GetOk(r, Key(23))
 	assertEqual(value, nil)
 	assertEqual(ok, false)
 
-	Set(r, "nil value", nil)
-	value, ok = GetOk(r, "nil value")
+	k := RegisterKey()
+	Set(r, k, nil)
+	value, ok = GetOk(r, k)
 	assertEqual(value, nil)
 	assertEqual(ok, true)
 
@@ -63,4 +62,21 @@ func TestContext(t *testing.T) {
 	// Clear()
 	Clear(r)
 	assertEqual(len(data), 0)
+}
+
+func BenchmarkSet(b *testing.B) {
+	r, _ := http.NewRequest("GET", "http://localhost:8080/", nil)
+	Set(r, key1, "foo")
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		Get(r, key1)
+	}
+}
+
+func BenchmarkGet(b *testing.B) {
+	r, _ := http.NewRequest("GET", "http://localhost:8080/", nil)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		Set(r, key1, "foo")
+	}
 }
