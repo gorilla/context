@@ -64,3 +64,20 @@ func TestContext(t *testing.T) {
 	Clear(r)
 	assertEqual(len(data), 0)
 }
+
+func BenchmarkSet(b *testing.B) {
+	r, _ := http.NewRequest("GET", "http://localhost:8080/", nil)
+	Set(r, key1, "foo")
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		Get(r, key1)
+	}
+}
+
+func BenchmarkGet(b *testing.B) {
+	r, _ := http.NewRequest("GET", "http://localhost:8080/", nil)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		Set(r, key1, "foo")
+	}
+}
