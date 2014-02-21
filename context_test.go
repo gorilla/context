@@ -6,6 +6,7 @@ package context
 
 import (
 	"net/http"
+
 	"testing"
 )
 
@@ -64,3 +65,22 @@ func TestContext(t *testing.T) {
 	Clear(r)
 	assertEqual(len(data), 0)
 }
+
+var result interface{}
+
+func benchmarkContextN(n int, b *testing.B) {
+	r, _ := http.NewRequest("GET", "http://localhost:8080/", nil)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		Set(r, key1, "1")
+		for j := 0; j < n; j++ {
+			result, _ = GetOk(r, "nil value")
+		}
+		Clear(r)
+	}
+}
+
+func BenchmarkContext1(b *testing.B)  { benchmarkContextN(1, b) }
+func BenchmarkContext2(b *testing.B)  { benchmarkContextN(2, b) }
+func BenchmarkContext5(b *testing.B)  { benchmarkContextN(5, b) }
+func BenchmarkContext10(b *testing.B) { benchmarkContextN(10, b) }

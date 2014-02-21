@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	mutex sync.Mutex
+	mutex sync.RWMutex
 	data  = make(map[*http.Request]map[interface{}]interface{})
 	datat = make(map[*http.Request]int64)
 )
@@ -29,8 +29,8 @@ func Set(r *http.Request, key, val interface{}) {
 
 // Get returns a value stored for a given key in a given request.
 func Get(r *http.Request, key interface{}) interface{} {
-	mutex.Lock()
-	defer mutex.Unlock()
+	mutex.RLock()
+	defer mutex.RUnlock()
 	if data[r] != nil {
 		return data[r][key]
 	}
@@ -39,8 +39,8 @@ func Get(r *http.Request, key interface{}) interface{} {
 
 // GetOk returns stored value and presence state like multi-value return of map access.
 func GetOk(r *http.Request, key interface{}) (interface{}, bool) {
-	mutex.Lock()
-	defer mutex.Unlock()
+	mutex.RLock()
+	defer mutex.RUnlock()
 	if _, ok := data[r]; ok {
 		value, ok := data[r][key]
 		return value, ok
