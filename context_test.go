@@ -62,6 +62,16 @@ func TestContext(t *testing.T) {
 		t.Error("GetAll didn't return nil value for invalid request")
 	}
 
+	// GetAllOk()
+	values, ok = GetAllOk(r)
+	assertEqual(len(values), 3)
+	assertEqual(ok, true)
+
+	// GetAllOk() for empty request
+	values, ok = GetAllOk(emptyR)
+	assertEqual(value, nil)
+	assertEqual(ok, false)
+
 	// Delete()
 	Delete(r, key1)
 	assertEqual(Get(r, key1), nil)
