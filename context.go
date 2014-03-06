@@ -59,8 +59,8 @@ func GetAll(r *http.Request) map[interface{}]interface{} {
 	return nil
 }
 
-// GetAll returns all stored values for the request as a map. It returns not ok
-// if the request was never registered.
+// GetAllOk returns all stored values for the request as a map. It returns not
+// ok if the request was never registered.
 func GetAllOk(r *http.Request) (map[interface{}]interface{}, bool) {
 	mutex.Lock()
 	defer mutex.Unlock()
