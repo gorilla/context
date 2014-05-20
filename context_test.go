@@ -104,14 +104,11 @@ func parallelWriter(r *http.Request, key, value string, iterations int, wait, do
 
 }
 
-func BenchmarkMutex(b *testing.B) {
+func benchmarkMutex(b *testing.B, numReaders, numWriters, iterations int) {
 
 	b.StopTimer()
 	r, _ := http.NewRequest("GET", "http://localhost:8080/", nil)
 	done := make(chan struct{})
-	numWriters := 64
-	numReaders := numWriters * 8
-	iterations := 128
 	b.StartTimer()
 
 	for i := 0; i < b.N; i++ {
@@ -133,4 +130,32 @@ func BenchmarkMutex(b *testing.B) {
 
 	}
 
+}
+
+func BenchmarkMutexSameReadWrite1(b *testing.B) {
+	benchmarkMutex(b, 1, 1, 32)
+}
+func BenchmarkMutexSameReadWrite2(b *testing.B) {
+	benchmarkMutex(b, 2, 2, 32)
+}
+func BenchmarkMutexSameReadWrite4(b *testing.B) {
+	benchmarkMutex(b, 4, 4, 32)
+}
+func BenchmarkMutex1(b *testing.B) {
+	benchmarkMutex(b, 2, 8, 32)
+}
+func BenchmarkMutex2(b *testing.B) {
+	benchmarkMutex(b, 16, 4, 64)
+}
+func BenchmarkMutex3(b *testing.B) {
+	benchmarkMutex(b, 1, 2, 128)
+}
+func BenchmarkMutex4(b *testing.B) {
+	benchmarkMutex(b, 128, 32, 256)
+}
+func BenchmarkMutex5(b *testing.B) {
+	benchmarkMutex(b, 1024, 2048, 64)
+}
+func BenchmarkMutex6(b *testing.B) {
+	benchmarkMutex(b, 2048, 1024, 512)
 }
