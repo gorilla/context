@@ -85,3 +85,52 @@ func TestContext(t *testing.T) {
 	Clear(r)
 	assertEqual(len(data), 0)
 }
+
+func parallelReader(r *http.Request, key string, iterations int, wait, done chan struct{}) {
+	<-wait
+	for i := 0; i < iterations; i++ {
+		Get(r, key)
+	}
+	done <- struct{}{}
+
+}
+
+func parallelWriter(r *http.Request, key, value string, iterations int, wait, done chan struct{}) {
+	<-wait
+	for i := 0; i < iterations; i++ {
+		Get(r, key)
+	}
+	done <- struct{}{}
+
+}
+
+func BenchmarkMutex(b *testing.B) {
+
+	b.StopTimer()
+	r, _ := http.NewRequest("GET", "http://localhost:8080/", nil)
+	done := make(chan struct{})
+	numWriters := 64
+	numReaders := numWriters * 8
+	iterations := 128
+	b.StartTimer()
+
+	for i := 0; i < b.N; i++ {
+		wait := make(chan struct{})
+
+		for i := 0; i < numReaders; i++ {
+			go parallelReader(r, "test", iterations, wait, done)
+		}
+
+		for i := 0; i < numWriters; i++ {
+			go parallelWriter(r, "test", "123", iterations, wait, done)
+		}
+
+		close(wait)
+
+		for i := 0; i < numReaders+numWriters; i++ {
+			<-done
+		}
+
+	}
+
+}
