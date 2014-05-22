@@ -54,20 +54,28 @@ func GetOk(r *http.Request, key interface{}) (interface{}, bool) {
 func GetAll(r *http.Request) map[interface{}]interface{} {
 	mutex.RLock()
 	if context, ok := data[r]; ok {
+		result := make(map[interface{}]interface{}, len(context))
+		for k, v := range context {
+			result[k] = v
+		}
 		mutex.RUnlock()
-		return context
+		return result
 	}
 	mutex.RUnlock()
 	return nil
 }
 
-// GetAllOk returns all stored values for the request as a map. It returns not
-// ok if the request was never registered.
+// GetAllOk returns all stored values for the request as a map and a boolean value that indicates if
+// the request was registered.
 func GetAllOk(r *http.Request) (map[interface{}]interface{}, bool) {
 	mutex.RLock()
 	context, ok := data[r]
+	result := make(map[interface{}]interface{}, len(context))
+	for k, v := range context {
+		result[k] = v
+	}
 	mutex.RUnlock()
-	return context, ok
+	return result, ok
 }
 
 // Delete removes a value stored for a given key in a given request.
