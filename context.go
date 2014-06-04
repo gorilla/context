@@ -30,9 +30,10 @@ func Set(r *http.Request, key, val interface{}) {
 // Get returns a value stored for a given key in a given request.
 func Get(r *http.Request, key interface{}) interface{} {
 	mutex.RLock()
-	if data[r] != nil {
+	if ctx := data[r]; ctx != nil {
+		value := ctx[key]
 		mutex.RUnlock()
-		return data[r][key]
+		return value
 	}
 	mutex.RUnlock()
 	return nil
