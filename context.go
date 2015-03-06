@@ -12,12 +12,12 @@ import (
 
 var (
 	mutex sync.RWMutex
-	data  = make(map[*http.Request]map[interface{}]interface{})
-	datat = make(map[*http.Request]int64)
+	data  = make(map[interface{}]map[interface{}]interface{})
+	datat = make(map[interface{}]int64)
 )
 
 // Set stores a value for a given key in a given request.
-func Set(r *http.Request, key, val interface{}) {
+func Set(r interface{}, key, val interface{}) {
 	mutex.Lock()
 	if data[r] == nil {
 		data[r] = make(map[interface{}]interface{})
@@ -28,7 +28,7 @@ func Set(r *http.Request, key, val interface{}) {
 }
 
 // Get returns a value stored for a given key in a given request.
-func Get(r *http.Request, key interface{}) interface{} {
+func Get(r interface{}, key interface{}) interface{} {
 	mutex.RLock()
 	if ctx := data[r]; ctx != nil {
 		value := ctx[key]
@@ -40,7 +40,7 @@ func Get(r *http.Request, key interface{}) interface{} {
 }
 
 // GetOk returns stored value and presence state like multi-value return of map access.
-func GetOk(r *http.Request, key interface{}) (interface{}, bool) {
+func GetOk(r interface{}, key interface{}) (interface{}, bool) {
 	mutex.RLock()
 	if _, ok := data[r]; ok {
 		value, ok := data[r][key]
@@ -52,7 +52,7 @@ func GetOk(r *http.Request, key interface{}) (interface{}, bool) {
 }
 
 // GetAll returns all stored values for the request as a map. Nil is returned for invalid requests.
-func GetAll(r *http.Request) map[interface{}]interface{} {
+func GetAll(r interface{}) map[interface{}]interface{} {
 	mutex.RLock()
 	if context, ok := data[r]; ok {
 		result := make(map[interface{}]interface{}, len(context))
@@ -68,7 +68,7 @@ func GetAll(r *http.Request) map[interface{}]interface{} {
 
 // GetAllOk returns all stored values for the request as a map and a boolean value that indicates if
 // the request was registered.
-func GetAllOk(r *http.Request) (map[interface{}]interface{}, bool) {
+func GetAllOk(r interface{}) (map[interface{}]interface{}, bool) {
 	mutex.RLock()
 	context, ok := data[r]
 	result := make(map[interface{}]interface{}, len(context))
@@ -80,7 +80,7 @@ func GetAllOk(r *http.Request) (map[interface{}]interface{}, bool) {
 }
 
 // Delete removes a value stored for a given key in a given request.
-func Delete(r *http.Request, key interface{}) {
+func Delete(r interface{}, key interface{}) {
 	mutex.Lock()
 	if data[r] != nil {
 		delete(data[r], key)
@@ -92,14 +92,14 @@ func Delete(r *http.Request, key interface{}) {
 //
 // This is usually called by a handler wrapper to clean up request
 // variables at the end of a request lifetime. See ClearHandler().
-func Clear(r *http.Request) {
+func Clear(r interface{}) {
 	mutex.Lock()
 	clear(r)
 	mutex.Unlock()
 }
 
 // clear is Clear without the lock.
-func clear(r *http.Request) {
+func clear(r interface{}) {
 	delete(data, r)
 	delete(datat, r)
 }
@@ -118,8 +118,8 @@ func Purge(maxAge int) int {
 	count := 0
 	if maxAge <= 0 {
 		count = len(data)
-		data = make(map[*http.Request]map[interface{}]interface{})
-		datat = make(map[*http.Request]int64)
+		data = make(map[interface{}]map[interface{}]interface{})
+		datat = make(map[interface{}]int64)
 	} else {
 		min := time.Now().Unix() - int64(maxAge)
 		for r := range data {
