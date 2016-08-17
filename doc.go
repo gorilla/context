@@ -5,7 +5,7 @@
 /*
 Package context stores values shared during a request lifetime.
 
-> Note: gorilla/context, having been born well before `context.Context` existed,
+Note: gorilla/context, having been born well before `context.Context` existed,
 does not play well > with the shallow copying of the request that
 [`http.Request.WithContext`](https://golang.org/pkg/net/http/#Request.WithContext)
 (added to net/http Go 1.7 onwards) performs. You should either use *just*
