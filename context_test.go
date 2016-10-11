@@ -32,11 +32,11 @@ func TestContext(t *testing.T) {
 	// Set()
 	Set(r, key1, "1")
 	assertEqual(Get(r, key1), "1")
-	assertEqual(len(data[r]), 1)
+	assertEqual(len(attributes(r)), 1)
 
 	Set(r, key2, "2")
 	assertEqual(Get(r, key2), "2")
-	assertEqual(len(data[r]), 2)
+	assertEqual(len(attributes(r)), 2)
 
 	//GetOk
 	value, ok := GetOk(r, key1)
@@ -75,15 +75,15 @@ func TestContext(t *testing.T) {
 	// Delete()
 	Delete(r, key1)
 	assertEqual(Get(r, key1), nil)
-	assertEqual(len(data[r]), 2)
+	assertEqual(len(attributes(r)), 2)
 
 	Delete(r, key2)
 	assertEqual(Get(r, key2), nil)
-	assertEqual(len(data[r]), 1)
+	assertEqual(len(attributes(r)), 1)
 
 	// Clear()
 	Clear(r)
-	assertEqual(len(data), 0)
+	assertEqual(len(attributes(r)), 0)
 }
 
 func parallelReader(r *http.Request, key string, iterations int, wait, done chan struct{}) {
