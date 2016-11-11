@@ -6,31 +6,32 @@ package context
 
 import (
 	"net/http"
+	"net/url"
 	"sync"
 	"time"
 )
 
 var (
 	mutex sync.RWMutex
-	data  = make(map[*http.Request]map[interface{}]interface{})
-	datat = make(map[*http.Request]int64)
+	data  = make(map[*url.URL]map[interface{}]interface{})
+	datat = make(map[*url.URL]int64)
 )
 
 // Set stores a value for a given key in a given request.
 func Set(r *http.Request, key, val interface{}) {
 	mutex.Lock()
-	if data[r] == nil {
-		data[r] = make(map[interface{}]interface{})
-		datat[r] = time.Now().Unix()
+	if data[r.URL] == nil {
+		data[r.URL] = make(map[interface{}]interface{})
+		datat[r.URL] = time.Now().Unix()
 	}
-	data[r][key] = val
+	data[r.URL][key] = val
 	mutex.Unlock()
 }
 
 // Get returns a value stored for a given key in a given request.
 func Get(r *http.Request, key interface{}) interface{} {
 	mutex.RLock()
-	if ctx := data[r]; ctx != nil {
+	if ctx := data[r.URL]; ctx != nil {
 		value := ctx[key]
 		mutex.RUnlock()
 		return value
@@ -42,8 +43,8 @@ func Get(r *http.Request, key interface{}) interface{} {
 // GetOk returns stored value and presence state like multi-value return of map access.
 func GetOk(r *http.Request, key interface{}) (interface{}, bool) {
 	mutex.RLock()
-	if _, ok := data[r]; ok {
-		value, ok := data[r][key]
+	if _, ok := data[r.URL]; ok {
+		value, ok := data[r.URL][key]
 		mutex.RUnlock()
 		return value, ok
 	}
@@ -54,7 +55,7 @@ func GetOk(r *http.Request, key interface{}) (interface{}, bool) {
 // GetAll returns all stored values for the request as a map. Nil is returned for invalid requests.
 func GetAll(r *http.Request) map[interface{}]interface{} {
 	mutex.RLock()
-	if context, ok := data[r]; ok {
+	if context, ok := data[r.URL]; ok {
 		result := make(map[interface{}]interface{}, len(context))
 		for k, v := range context {
 			result[k] = v
@@ -70,7 +71,7 @@ func GetAll(r *http.Request) map[interface{}]interface{} {
 // the request was registered.
 func GetAllOk(r *http.Request) (map[interface{}]interface{}, bool) {
 	mutex.RLock()
-	context, ok := data[r]
+	context, ok := data[r.URL]
 	result := make(map[interface{}]interface{}, len(context))
 	for k, v := range context {
 		result[k] = v
@@ -82,8 +83,8 @@ func GetAllOk(r *http.Request) (map[interface{}]interface{}, bool) {
 // Delete removes a value stored for a given key in a given request.
 func Delete(r *http.Request, key interface{}) {
 	mutex.Lock()
-	if data[r] != nil {
-		delete(data[r], key)
+	if data[r.URL] != nil {
+		delete(data[r.URL], key)
 	}
 	mutex.Unlock()
 }
@@ -94,14 +95,14 @@ func Delete(r *http.Request, key interface{}) {
 // variables at the end of a request lifetime. See ClearHandler().
 func Clear(r *http.Request) {
 	mutex.Lock()
-	clear(r)
+	clear(r.URL)
 	mutex.Unlock()
 }
 
 // clear is Clear without the lock.
-func clear(r *http.Request) {
-	delete(data, r)
-	delete(datat, r)
+func clear(u *url.URL) {
+	delete(data, u)
+	delete(datat, u)
 }
 
 // Purge removes request data stored for longer than maxAge, in seconds.
@@ -118,13 +119,13 @@ func Purge(maxAge int) int {
 	count := 0
 	if maxAge <= 0 {
 		count = len(data)
-		data = make(map[*http.Request]map[interface{}]interface{})
-		datat = make(map[*http.Request]int64)
+		data = make(map[*url.URL]map[interface{}]interface{})
+		datat = make(map[*url.URL]int64)
 	} else {
 		min := time.Now().Unix() - int64(maxAge)
-		for r := range data {
-			if datat[r] < min {
-				clear(r)
+		for u := range data {
+			if datat[u] < min {
+				clear(u)
 				count++
 			}
 		}
