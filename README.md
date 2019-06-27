@@ -1,7 +1,7 @@
 context
 =======
 [![GoDoc](https://godoc.org/github.com/gorilla/context?status.svg)](https://godoc.org/github.com/gorilla/context)
-[![Build Status](https://travis-ci.org/gorilla/context.png?branch=master)](https://travis-ci.org/gorilla/context)
+[![CircleCI](https://circleci.com/gh/gorilla/context.svg?style=svg)](https://circleci.com/gh/gorilla/context)
 
 > 👷 **This library is in maintenance mode.**
 
