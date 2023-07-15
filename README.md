@@ -3,8 +3,6 @@ context
 [![GoDoc](https://godoc.org/github.com/gorilla/context?status.svg)](https://godoc.org/github.com/gorilla/context)
 [![CircleCI](https://circleci.com/gh/gorilla/context.svg?style=svg)](https://circleci.com/gh/gorilla/context)
 
-> 👷 **This library is in maintenance mode.**
-
 > ⚠⚠⚠ **Note** ⚠⚠⚠ gorilla/context, having been born well before `context.Context` existed, does not play well
 > with the shallow copying of the request that [`http.Request.WithContext`](https://golang.org/pkg/net/http/#Request.WithContext) (added to net/http Go 1.7 onwards) performs.
 >
