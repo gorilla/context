@@ -1,7 +1,11 @@
-context
-=======
-[![GoDoc](https://godoc.org/github.com/gorilla/context?status.svg)](https://godoc.org/github.com/gorilla/context)
-[![CircleCI](https://circleci.com/gh/gorilla/context.svg?style=svg)](https://circleci.com/gh/gorilla/context)
+# gorilla/context
+
+![testing](https://github.com/gorilla/context/actions/workflows/test.yml/badge.svg)
+[![codecov](https://codecov.io/github/gorilla/context/branch/main/graph/badge.svg)](https://codecov.io/github/gorilla/context)
+[![godoc](https://godoc.org/github.com/gorilla/context?status.svg)](https://godoc.org/github.com/gorilla/context)
+[![sourcegraph](https://sourcegraph.com/github.com/gorilla/context/-/badge.svg)](https://sourcegraph.com/github.com/gorilla/context?badge)
+
+![Gorilla Logo](https://github.com/gorilla/.github/assets/53367916/d92caabf-98e0-473e-bfbf-ab554ba435e5)
 
 > ⚠⚠⚠ **Note** ⚠⚠⚠ gorilla/context, having been born well before `context.Context` existed, does not play well
 > with the shallow copying of the request that [`http.Request.WithContext`](https://golang.org/pkg/net/http/#Request.WithContext) (added to net/http Go 1.7 onwards) performs.
