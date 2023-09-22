@@ -8,27 +8,45 @@ GO_VULNCHECK=$(shell which govulncheck 2> /dev/null || echo '')
 GO_VULNCHECK_URI=golang.org/x/vuln/cmd/govulncheck@latest
 
 .PHONY: golangci-lint
-golangci-lint:
+golangci-lint: ## Run golangci-lint. Example: make golangci-lint
 	$(if $(GO_LINT), ,go install $(GO_LINT_URI))
-	@echo "##### Running golangci-lint"
+	@echo "##### Running golangci-lint #####"
 	golangci-lint run -v
 
+.PHONY: verify
+verify: ## Run all verifications [golangci-lint]. Example: make verify
+	@echo "##### Running verifications #####"
+	$(MAKE) golangci-lint
+
 .PHONY: gosec
-gosec:
+gosec: ## Run gosec. Example: make gosec
 	$(if $(GO_SEC), ,go install $(GO_SEC_URI))
-	@echo "##### Running gosec"
+	@echo "##### Running gosec #####"
 	gosec ./...
 
 .PHONY: govulncheck
-govulncheck:
+govulncheck: ## Run govulncheck. Example: make govulncheck
 	$(if $(GO_VULNCHECK), ,go install $(GO_VULNCHECK_URI))
-	@echo "##### Running govulncheck"
+	@echo "##### Running govulncheck #####"
 	govulncheck ./...
 
-.PHONY: verify
-verify: golangci-lint gosec govulncheck
+.PHONY: security
+security: ## Run all security checks [gosec, govulncheck]. Example: make security
+	@echo "##### Running security checks #####"
+	$(MAKE) gosec
+	$(MAKE) govulncheck
+
+.PHONY: test-unit
+test-unit: ## Run unit tests. Example: make test-unit
+	@echo "##### Running unit tests #####"
+	go test -race -cover -coverprofile=coverage.coverprofile -covermode=atomic -v ./...
 
 .PHONY: test
-test:
-	@echo "##### Running tests"
-	go test -race -cover -coverprofile=coverage.coverprofile -covermode=atomic -v ./...
+test: ## Run all tests [test-unit]. Example: make test
+	@echo "##### Running tests #####"
+	$(MAKE) test-unit
+
+.PHONY: help
+help: ## Print this help. Example: make help
+	@echo "##### Printing help #####"
+	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
