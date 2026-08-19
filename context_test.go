@@ -3,6 +3,7 @@ package context
 import (
 	"net/http"
 	"testing"
+	"time"
 )
 
 type keyType int
@@ -81,6 +82,56 @@ func TestContext(t *testing.T) {
 	Clear(r)
 	assertEqual(len(data), 0)
 }
+
+type dummyHandler struct{}
+
+func (dummyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	Set(r, key1, "val1")
+}
+
+func TestClearHandler(t *testing.T) {
+	r, _ := http.NewRequest("GET", "http://localhost:8080/", nil)
+	h := ClearHandler(dummyHandler{})
+	h.ServeHTTP(nil, r)
+
+	if Get(r, key1) != nil {
+		t.Error("Expected request data to be cleared by ClearHandler, but found stored data")
+	}
+}
+
+func TestPurge(t *testing.T) {
+	r1, _ := http.NewRequest("GET", "http://localhost:8080/1", nil)
+	r2, _ := http.NewRequest("GET", "http://localhost:8080/2", nil)
+
+	Set(r1, key1, "val1")
+	Set(r2, key2, "val2")
+
+	// Set timestamps artificially into past
+	mutex.Lock()
+	datat[r1] = time.Now().Unix() - 100
+	mutex.Unlock()
+
+	purged := Purge(50)
+	if purged != 1 {
+		t.Errorf("Expected 1 request to be purged, got %d", purged)
+	}
+	if Get(r1, key1) != nil {
+		t.Error("Expected r1 to be purged")
+	}
+	if Get(r2, key2) == nil {
+		t.Error("Expected r2 to remain stored")
+	}
+
+	// Purge all with maxAge <= 0
+	purged = Purge(0)
+	if purged != 1 {
+		t.Errorf("Expected 1 request to be purged with maxAge 0, got %d", purged)
+	}
+	if Get(r2, key2) != nil {
+		t.Error("Expected r2 to be purged with maxAge 0")
+	}
+}
+
 
 func parallelReader(r *http.Request, key string, iterations int, wait, done chan struct{}) {
 	<-wait
